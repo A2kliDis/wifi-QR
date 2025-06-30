@@ -1,0 +1,147 @@
+body {
+    background: linear-gradient(135deg, #f5f6fa 0%, #dff9fb 100%);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+.container {
+    max-width: 420px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(39,60,117,0.08);
+    padding: 32px 20px 24px 20px;
+    text-align: center;
+}
+.lang-switch {
+    margin-bottom: 10px;
+}
+h1 {
+    font-size: 2em;
+    margin-bottom: 18px;
+    color: #273c75;
+    letter-spacing: 1px;
+}
+.qr-extract {
+    margin: 18px 0 18px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    background: #f1f2f6;
+    border-radius: 10px;
+    padding: 16px 8px 12px 8px;
+}
+#extract-label {
+    font-size: 1.08em;
+    color: #353b48;
+    margin-bottom: 4px;
+}
+#qr-file {
+    display: none;
+}
+.custom-file-label {
+    display: inline-block;
+    background: #40739e;
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-bottom: 4px;
+    transition: background 0.2s;
+}
+.custom-file-label:hover {
+    background: #273c75;
+}
+#scan-btn {
+    background: #44bd32;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 18px;
+    font-size: 1em;
+    cursor: pointer;
+    margin-top: 2px;
+    margin-bottom: 4px;
+    transition: background 0.2s;
+    font-weight: bold;
+}
+#scan-btn:hover {
+    background: #218c5a;
+}
+#video {
+    display: none;
+    width: 256px;
+    height: 256px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(39,60,117,0.12);
+}
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    margin-bottom: 18px;
+}
+label {
+    text-align: left;
+    font-size: 1em;
+    color: #353b48;
+    margin-bottom: 2px;
+}
+input, select {
+    padding: 9px;
+    border: 1px solid #dcdde1;
+    border-radius: 6px;
+    font-size: 1em;
+    background: #f8f9fa;
+    transition: border 0.2s;
+}
+input:focus, select:focus {
+    border: 1.5px solid #40739e;
+    outline: none;
+}
+button[type="submit"] {
+    background: #273c75;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 11px;
+    font-size: 1.08em;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.2s;
+    font-weight: bold;
+}
+button[type="submit"]:hover {
+    background: #40739e;
+}
+#qrcode {
+    margin-top: 22px;
+    min-height: 256px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#message {
+    margin: 10px 0 0 0;
+    min-height: 24px;
+    color: #e17055;
+    font-size: 1em;
+    text-align: center;
+}
+@media (max-width: 600px) {
+    .container {
+        max-width: 98vw;
+        padding: 12px 2vw 12px 2vw;
+    }
+    #video {
+        width: 98vw;
+        height: auto;
+        max-width: 320px;
+    }
+    #qrcode {
+        min-height: 180px;
+    }
+} 

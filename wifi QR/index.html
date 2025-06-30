@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مولد رمز QR لشبكة WiFi</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .lang-switch {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .lang-btn {
+            background: none;
+            border: none;
+            color: #273c75;
+            font-size: 1em;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .lang-btn.active {
+            text-decoration: underline;
+        }
+        .qr-extract {
+            margin: 20px 0 10px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+        #video {
+            display: none;
+            width: 256px;
+            height: 256px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body dir="rtl">
+    <div class="container">
+        <div class="lang-switch">
+            <button class="lang-btn active" id="ar-btn">العربية</button>
+            <span>|</span>
+            <button class="lang-btn" id="en-btn">English</button>
+        </div>
+        <h1 id="title">مولد رمز QR لشبكة WiFi</h1>
+        <div class="qr-extract">
+            <label id="extract-label">استخراج معلومات الواي فاي من رمز QR:</label>
+            <label for="qr-file" class="custom-file-label" id="file-label">اختر صورة رمز QR</label>
+            <input type="file" id="qr-file" accept="image/*">
+            <button id="scan-btn"><span id="scan-icon">📷</span> مسح بالكاميرا</button>
+            <video id="video" autoplay></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+        </div>
+        <div id="message"></div>
+        <form id="wifi-form">
+            <label for="ssid" id="ssid-label">اسم الشبكة (SSID):</label>
+            <input type="text" id="ssid" required>
+            <label for="password" id="password-label">كلمة المرور:</label>
+            <input type="text" id="password">
+            <label for="encryption" id="encryption-label">نوع التشفير:</label>
+            <select id="encryption">
+                <option value="WPA" id="wpa-opt">WPA/WPA2</option>
+                <option value="WEP" id="wep-opt">WEP</option>
+                <option value="nopass" id="nopass-opt">بدون كلمة مرور</option>
+            </select>
+            <button type="submit" id="generate-btn">إنشاء رمز QR</button>
+        </form>
+        <div id="qrcode"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script>
+        // النصوص باللغتين
+        const translations = {
+            ar: {
+                title: 'مولد رمز QR لشبكة WiFi',
+                ssid: 'اسم الشبكة (SSID):',
+                password: 'كلمة المرور:',
+                encryption: 'نوع التشفير:',
+                wpa: 'WPA/WPA2',
+                wep: 'WEP',
+                nopass: 'بدون كلمة مرور',
+                generate: 'إنشاء رمز QR',
+                extract: 'استخراج معلومات الواي فاي من رمز QR:',
+                scan: 'مسح بالكاميرا',
+                choose: 'اختر صورة رمز QR',
+                scanIcon: '📷',
+                msgSuccess: 'تم استخراج معلومات الشبكة بنجاح!',
+                msgFail: 'لم يتم العثور على رمز QR صالح.',
+                msgNotWifi: 'هذا الرمز ليس رمز واي فاي.',
+                msgCamera: 'يرجى توجيه الكاميرا نحو رمز QR...',
+                msgCameraFail: 'لم يتم العثور على رمز QR عبر الكاميرا.',
+                msgGen: 'تم إنشاء رمز QR بنجاح!',
+            },
+            en: {
+                title: 'WiFi QR Code Generator',
+                ssid: 'WiFi Name (SSID):',
+                password: 'WiFi Password:',
+                encryption: 'Encryption Type:',
+                wpa: 'WPA/WPA2',
+                wep: 'WEP',
+                nopass: 'No Password',
+                generate: 'Generate QR Code',
+                extract: 'Extract WiFi info from QR code:',
+                scan: 'Scan with Camera',
+                choose: 'Choose QR Image',
+                scanIcon: '📷',
+                msgSuccess: 'WiFi info extracted successfully!',
+                msgFail: 'No valid QR code found.',
+                msgNotWifi: 'This QR is not a WiFi QR code.',
+                msgCamera: 'Point your camera at the QR code...',
+                msgCameraFail: 'No QR code found via camera.',
+                msgGen: 'QR code generated successfully!',
+            }
+        };
+        let currentLang = 'ar';
+        function setLang(lang) {
+            currentLang = lang;
+            document.getElementById('title').textContent = translations[lang].title;
+            document.getElementById('ssid-label').textContent = translations[lang].ssid;
+            document.getElementById('password-label').textContent = translations[lang].password;
+            document.getElementById('encryption-label').textContent = translations[lang].encryption;
+            document.getElementById('wpa-opt').textContent = translations[lang].wpa;
+            document.getElementById('wep-opt').textContent = translations[lang].wep;
+            document.getElementById('nopass-opt').textContent = translations[lang].nopass;
+            document.getElementById('generate-btn').textContent = translations[lang].generate;
+            document.getElementById('extract-label').textContent = translations[lang].extract;
+            document.getElementById('scan-btn').textContent = translations[lang].scanIcon + ' ' + translations[lang].scan;
+            document.getElementById('file-label').textContent = translations[lang].choose;
+            document.getElementById('ar-btn').classList.toggle('active', lang === 'ar');
+            document.getElementById('en-btn').classList.toggle('active', lang === 'en');
+            document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+            document.documentElement.lang = lang;
+        }
+        document.getElementById('ar-btn').onclick = function() { setLang('ar'); };
+        document.getElementById('en-btn').onclick = function() { setLang('en'); };
+
+        // 消息提示
+        function showMessage(msg, color = '#44bd32') {
+            const el = document.getElementById('message');
+            el.textContent = msg;
+            el.style.color = color;
+        }
+        function clearMessage() {
+            document.getElementById('message').textContent = '';
+        }
+
+        // 自定义文件上传按钮
+        document.getElementById('file-label').onclick = function() {
+            document.getElementById('qr-file').click();
+        };
+
+        // 生成二维码
+        document.getElementById('wifi-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var ssid = document.getElementById('ssid').value;
+            var password = document.getElementById('password').value;
+            var encryption = document.getElementById('encryption').value;
+            var qrDiv = document.getElementById('qrcode');
+            qrDiv.innerHTML = '';
+            var wifiString = '';
+            if (encryption === 'nopass') {
+                wifiString = `WIFI:T:nopass;S:${ssid};;`;
+            } else {
+                wifiString = `WIFI:T:${encryption};S:${ssid};P:${password};;`;
+            }
+            new QRCode(qrDiv, {
+                text: wifiString,
+                width: 256,
+                height: 256
+            });
+            showMessage(translations[currentLang].msgGen, '#44bd32');
+        });
+
+        // 从二维码图片提取WiFi信息
+        document.getElementById('qr-file').addEventListener('change', function(e) {
+            clearMessage();
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function() {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.getElementById('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, canvas.width, canvas.height);
+                    if (code && code.data) {
+                        fillWifiFromQR(code.data);
+                        showMessage(translations[currentLang].msgSuccess, '#44bd32');
+                    } else {
+                        showMessage(translations[currentLang].msgFail, '#e17055');
+                    }
+                };
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // 用摄像头扫描二维码
+        document.getElementById('scan-btn').onclick = function() {
+            clearMessage();
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            video.style.display = 'block';
+            showMessage(translations[currentLang].msgCamera, '#40739e');
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(function(stream) {
+                video.srcObject = stream;
+                video.setAttribute('playsinline', true);
+                video.play();
+                const scan = () => {
+                    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const code = jsQR(imageData.data, canvas.width, canvas.height);
+                        if (code && code.data) {
+                            fillWifiFromQR(code.data);
+                            showMessage(translations[currentLang].msgSuccess, '#44bd32');
+                            video.pause();
+                            video.srcObject.getTracks().forEach(track => track.stop());
+                            video.style.display = 'none';
+                            return;
+                        }
+                    }
+                    requestAnimationFrame(scan);
+                };
+                scan();
+            });
+        };
+
+        // 解析WiFi二维码内容并填充表单
+        function fillWifiFromQR(data) {
+            if (!data.startsWith('WIFI:')) {
+                showMessage(translations[currentLang].msgNotWifi, '#e17055');
+                return;
+            }
+            const matchT = data.match(/T:([^;]*)/);
+            const matchS = data.match(/S:([^;]*)/);
+            const matchP = data.match(/P:([^;]*)/);
+            const type = matchT ? matchT[1] : '';
+            const ssid = matchS ? matchS[1] : '';
+            const pass = matchP ? matchP[1] : '';
+            document.getElementById('ssid').value = ssid;
+            document.getElementById('password').value = pass;
+            document.getElementById('encryption').value = type || 'WPA';
+        }
+
+        // 默认阿拉伯语
+        setLang('ar');
+    </script>
+</body>
+</html> 
